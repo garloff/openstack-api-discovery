@@ -174,6 +174,7 @@ getVersion()
 {
   #VERS=$(otc.sh custom GET $rept 2>/dev/null)
 
+  unset EXT
   VERS=$(curl -m 6 -sS -X GET $resolv -H "Content-Type: application/json" -H "Accept: application/json" \
               -H "X-Auth-Token: $id" -H "X-Language: en-us" "$rept" 2>/dev/null)
   RC=$?
