@@ -20,11 +20,12 @@
 # License: CC-BY-SA 4.0
 #
 
-    OPVER=("Queens" "Rocky" "Stein" "Train" "Ussuri" "Victoria" "Wallaby" "Xena")
-  NOVAVER=(2.54 2.61 2.66 2.73 2.80 2.80 2.88 2.89)
-GLANCEVER=(2.6  2.7  2.7  2.9  2.10 2.11 2.11 2.11)
-CINDERVER=(3.44 3.51 3.56 3.56 3.60 3.61 3.63 3.65)
+    OPVER=("Queens" "Rocky" "Stein" "Train" "Ussuri" "Victoria" "Wallaby" "Xena" "Yoga")
+  NOVAVER=(2.54 2.61 2.66 2.73 2.80 2.80 2.88 2.89 2.89)
+GLANCEVER=(2.6  2.7  2.7  2.9  2.10 2.11 2.11 2.11 2.14)
+CINDERVER=(3.44 3.51 3.56 3.56 3.60 3.61 3.63 3.65 3.67)
 #NEUTRONVER=()
+#    last   O    Q    R    S    T    U    V    W    X
 
 test -x $(which jq) || exit 2
 
