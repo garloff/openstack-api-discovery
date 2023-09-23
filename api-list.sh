@@ -23,7 +23,7 @@
 
     OPVER=("Queens" "Rocky" "Stein" "Train" "Ussuri" "Victoria" "Wallaby" "Xena" "Yoga" "Zed" "2023.1.Antelope")
   NOVAVER=(2.54 2.61 2.66 2.73 2.80 2.80 2.88 2.89 2.89 2.93 2.95)
-GLANCEVER=(2.6  2.7  2.7  2.9  2.10 2.11 2.11 2.11 2.14 2.15 2.16)
+GLANCEVER=(2.6  2.7  2.7  2.9  2.10 2.11 2.11 2.11 2.14 2.15 2.15)
 CINDERVER=(3.44 3.51 3.56 3.56 3.60 3.61 3.63 3.65 3.67 3.70 3.70)
 #NEUTRONVER=()
 #    last   O    Q    R    S    T    U    V    W    X
@@ -207,7 +207,8 @@ getVersion()
 		  getAZs volume;;
 	  "nova") findORelease "$CURR" "${NOVAVER[*]}"
 		  getAZs compute;;
-	  "glance") findORelease "$CURR" "${GLANCEVER[*]}";;
+	  "glance") findORelease "$CURR" "${GLANCEVER[*]}"
+		  if test "$CURR" = "v2.16"; then ONM="$ONM w/ img cache"; fi;;
 	  "neutron") ONM="";
 		  getAZs network;;
 	  *) ONM="";;
