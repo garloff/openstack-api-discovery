@@ -10,6 +10,7 @@
 #
 # Usage: api-list.sh [-d] [-k] [-c] [-r REGION]
 #  -d is for debug, -r filters only one region (if your catalog reports several)
+#  -k is for --insecure, -c for color output
 #
 # You need to have OS_CLOUD set (and endpoint and credentials in clouds.yaml and secure.yaml)
 #  or the traditional OS_AUTH_URL, OS_USERNAME etc. set, so openstack catalog list works
