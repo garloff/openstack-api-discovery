@@ -14,3 +14,5 @@ the services with endpoints and versions and extensions.
 It also displays info on the SSL certificate used.
 
 This is a demonstrator to generate structured (JSON/JSON-LD\*) data for self-descriptions.
+
+See the gx-self-description-generator repository for later work in python.

@@ -8,8 +8,9 @@
 #
 # TODO: Add logic for special features such as neutron's LBaaS2, VPNaaS, FWaaS ...
 #
-# Usage: api-list.sh [-d] [-r REGION]
+# Usage: api-list.sh [-d] [-k] [-c] [-r REGION]
 #  -d is for debug, -r filters only one region (if your catalog reports several)
+#  -k is for --insecure, -c for color output
 #
 # You need to have OS_CLOUD set (and endpoint and credentials in clouds.yaml and secure.yaml)
 #  or the traditional OS_AUTH_URL, OS_USERNAME etc. set, so openstack catalog list works
@@ -20,10 +21,10 @@
 # License: CC-BY-SA 4.0
 #
 
-    OPVER=("Queens" "Rocky" "Stein" "Train" "Ussuri" "Victoria" "Wallaby" "Xena" "Yoga")
-  NOVAVER=(2.54 2.61 2.66 2.73 2.80 2.80 2.88 2.89 2.89)
-GLANCEVER=(2.6  2.7  2.7  2.9  2.10 2.11 2.11 2.11 2.14)
-CINDERVER=(3.44 3.51 3.56 3.56 3.60 3.61 3.63 3.65 3.67)
+    OPVER=("Queens" "Rocky" "Stein" "Train" "Ussuri" "Victoria" "Wallaby" "Xena" "Yoga" "Zed" "2023.1.Antelope")
+  NOVAVER=(2.54 2.61 2.66 2.73 2.80 2.80 2.88 2.89 2.89 2.93 2.95)
+GLANCEVER=(2.6  2.7  2.7  2.9  2.10 2.11 2.11 2.11 2.14 2.15 2.15)
+CINDERVER=(3.44 3.51 3.56 3.56 3.60 3.61 3.63 3.65 3.67 3.70 3.70)
 #NEUTRONVER=()
 #    last   O    Q    R    S    T    U    V    W    X
 
@@ -47,6 +48,7 @@ getProject()
 }
 
 if test "$1" == "-d"; then DEBUG=1; shift; fi
+if test "$1" == "-k"; then K=-k; shift; fi
 if test "$1" == "-c"; then COL=1; shift; fi
 if test "$1" == "-r"; then REGION=${2:-$OS_REGION_NAME}; shift; fi
 
@@ -111,6 +113,7 @@ getuVersion()
 getCurrVersion()
 {
 	#echo "$VERS"
+	if test -n "$DEBUG"; then echo "# DEBUG: getCurrVersion $(echo $VERS | jq .)"; fi
 	CURR=$(echo "$VERS" | jq '.versions[] | select(.status=="CURRENT") | .version' 2>/dev/null | tr -d '"'; exit ${PIPESTATUS[1]})
 	if test $? != 0 -o "$CURR" == "null"; then CURR=$(echo "$VERS" | jq '.versions[] | select(.status=="CURRENT") | .id' 2>/dev/null | tr -d '"'; exit ${PIPESTATUS[1]}); fi
 	if test $? != 0 -o "$CURR" == "null"; then CURR=$(echo "$VERS" | jq '.versions.values[] | select(.status=="CURRENT") | .version' 2>/dev/null | tr -d '"'; exit ${PIPESTATUS[1]}); fi
@@ -119,6 +122,7 @@ getCurrVersion()
 
 findORelease()
 {
+	if test -n "$DEBUG"; then echo "# DEBUG: findORelease \"$1\" \"$2\""; fi
 	NVER=${1#v}
 	NVER=$((1000*${NVER%.*}+${NVER##*.}))
 	VARR=($2)
@@ -142,12 +146,12 @@ findORelease()
 
 getExtension()
 {
-	EXT=$(curl -m 6 -sS -X GET $resolv -H "Content-Type: application/json" -H "Accept: application/json" \
+	EXT=$(curl -m 6 -sS $K -X GET $resolv -H "Content-Type: application/json" -H "Accept: application/json" \
               -H "X-Auth-Token: $id" -H "X-Language: en-us" "$endpt/extensions" 2>/dev/null)
 	RC=$?
 	#echo "## DEBUG: /extensions $RC $EXT"
 	if echo "$EXT" | grep '[Cc]ode\":' >/dev/null 2>&1 && test "$VER" != "?" -a "$r{VER:0:1}" != "-"; then
-		EXT=$(curl -m 6 -sS -X GET $resolv -H "Content-Type: application/json" -H "Accept: application/json" \
+		EXT=$(curl -m 6 -sS $K -X GET $resolv -H "Content-Type: application/json" -H "Accept: application/json" \
         	      -H "X-Auth-Token: $id" -H "X-Language: en-us" "$endpt/${VER%%(*}/extensions" 2>/dev/null)
 		if echo "$EXT" | grep '[Cc]ode\":' >/dev/null 2>&1; then EXT=""; return; fi
 	fi
@@ -176,12 +180,16 @@ getVersion()
   #VERS=$(otc.sh custom GET $rept 2>/dev/null)
 
   unset EXT
-  VERS=$(curl -m 6 -sS -X GET $resolv -H "Content-Type: application/json" -H "Accept: application/json" \
+  if test -n "$DEBUG"; then
+	echo "# DEBUG: curl -m 6 -sS $K -X GET $resolv -H \"Content-Type: application/json\" -H \"Accept: application/json\" -H \"X-Auth-Token: *REDACTED*\" -H \"X-Language: en-us\" \"$rept\""
+  fi
+  VERS=$(curl -m 6 -sS $K -X GET $resolv -H "Content-Type: application/json" -H "Accept: application/json" \
               -H "X-Auth-Token: $id" -H "X-Language: en-us" "$rept" 2>/dev/null)
   RC=$?
   if test -n "$DEBUG"; then
-    echo "# DEBUG:$endpt:$RC/$VERS"
+    echo "# DEBUG:getVersion $endpt status $RC \"$VERS\""
   fi
+  if test $RC = 60; then echo "#ERROR: Self-signed cert; pass -k"; exit 1; fi
   if test $RC == 0 && [[ "$VERS" != *40* ]] && [[ "$VERS" != *"API not found"* ]]; then
     getuVersion
     getExtension
