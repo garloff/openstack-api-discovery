@@ -71,7 +71,7 @@ extractEP()
     endpt=$(echo -en "$endpt" | grep -A1 "$REGION" | grep public | head -n1)
     if test -z "$endpt"; then
       # If we have regionalized EPs but are filtering, skip
-      if echo "$oldep" | grep 'region\(_id\|\):' >/dev/null 2>&1; then continue; fi
+      if echo "$oldep" | grep 'region\(_id\|\):' >/dev/null 2>&1; then return 1; fi
       endpt=$(echo -en "$oldep" | grep public | sort | head -n1)
     fi
   else
